@@ -10,31 +10,29 @@ import java.util.Optional;
 
 @org.springframework.web.bind.annotation.RestController
 public class RestController {
-	private final ArrayList<Room> roomList = new ArrayList<>();
-	private final ArrayList<PresenceDetectionEvent> presenceDetectionEvents = new ArrayList<>();
+
+	ServicesController servicesController;
 
 	RestController() {
-		roomList.add(new Room(0));
-		roomList.add(new Room(1, true, false));
+		servicesController = new ServicesController();
 	}
 
 	@GetMapping("/rooms")
 	public ArrayList<Room> rooms() {
-		return roomList;
+		return servicesController.getRoomList();
 	}
 
 	@GetMapping("/rooms/{id}")
 	public Room roomId(@PathVariable("id") long id) {
-		System.out.println(id);
-		Optional<Room> room = roomList.stream().filter(i -> i.getId() == id).findFirst();
+		Optional<Room> room = servicesController.getRoomOfId(id);
 		return room.orElseThrow(() -> new RoomNotFoundException(id));
 	}
 
 	@PostMapping("/presence-event/{id}")
 	public void presenceId(@PathVariable("id") long id) {
-		Optional<Room> room = roomList.stream().filter(i -> i.getId() == id).findFirst();
+		Optional<Room> room = servicesController.getRoomOfId(id);
 		if (room.isPresent()) {
-			presenceDetectionEvents.add(new PresenceDetectionEvent(id));
+			servicesController.addPresenceDetectionEvent(id);
 		} else {
 			throw new RoomNotFoundException(id);
 		}
