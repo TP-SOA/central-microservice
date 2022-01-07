@@ -44,7 +44,11 @@ public class Room {
 		this.presenceAvailable = presenceAvailable;
 	}
 
-	public void addPresenceDetectionEvent(PresenceDetectionEvent event) {
+	public interface PresenceDetectionTimeoutCallback {
+		void onTimeout();
+	}
+
+	public void addPresenceDetectionEvent(PresenceDetectionEvent event, PresenceDetectionTimeoutCallback callback) {
 		if (presenceAvailable) {
 			presenceDetectionEvents.add(event);
 			System.out.println("Adding detection event for " + id);
@@ -56,6 +60,7 @@ public class Room {
 				public void run() {
 					System.out.println("Disabling detection state for " + id);
 					presenceDetected = false;
+					callback.onTimeout();
 				}
 			}, 20 * 1000);
 		}
