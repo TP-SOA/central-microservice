@@ -10,6 +10,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class ServicesController {
 	private final ArrayList<Room> roomList = new ArrayList<>();
@@ -19,12 +21,16 @@ public class ServicesController {
 	}
 
 	private void initRoomList() {
-		Thread t = new Thread(() -> {
-			fetchMicroservice(MicroserviceType.LIGHT);
-			fetchMicroservice(MicroserviceType.ALARM);
-			fetchMicroservice(MicroserviceType.DOOR);
-		});
-		t.start();
+		Timer t = new Timer();
+		// Update the microservice data every 5 seconds
+		t.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				fetchMicroservice(MicroserviceType.LIGHT);
+				fetchMicroservice(MicroserviceType.ALARM);
+				fetchMicroservice(MicroserviceType.DOOR);
+			}
+		}, 0, 5 * 1000);
 	}
 
 	private void toggleMicroservice(Room room, MicroserviceType type, boolean enabled) {
@@ -98,9 +104,9 @@ public class ServicesController {
 				toggleMicroservice(value, MicroserviceType.ALARM, true);
 			} else {
 				toggleMicroservice(value, MicroserviceType.LIGHT, true);
-				value.addPresenceDetectionEvent(new PresenceDetectionEvent(), () ->
-						toggleMicroservice(value, MicroserviceType.LIGHT, false));
 			}
+			value.addPresenceDetectionEvent(new PresenceDetectionEvent(), () ->
+					toggleMicroservice(value, MicroserviceType.LIGHT, false));
 		});
 	}
 }
