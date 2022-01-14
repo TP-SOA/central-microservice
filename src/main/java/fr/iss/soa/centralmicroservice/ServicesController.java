@@ -1,5 +1,6 @@
 package fr.iss.soa.centralmicroservice;
 
+import com.netflix.discovery.EurekaClient;
 import fr.iss.soa.centralmicroservice.constants.MicroserviceType;
 import fr.iss.soa.centralmicroservice.constants.MicroservicesUrl;
 import org.json.JSONArray;
@@ -17,8 +18,11 @@ import java.util.TimerTask;
 public class ServicesController {
 	private final ArrayList<Room> roomList = new ArrayList<>();
 
-	ServicesController() {
+	private final MicroservicesUrl microservicesUrl;
+
+	ServicesController(EurekaClient eurekaClient) {
 		initRoomList();
+		this.microservicesUrl = new MicroservicesUrl(eurekaClient);
 	}
 
 	private void initRoomList() {
@@ -36,7 +40,7 @@ public class ServicesController {
 
 	public void toggleMicroservice(Room room, MicroserviceType type, boolean enabled) {
 		RestTemplate restTemplate = new RestTemplate();
-		String url = MicroservicesUrl.getServiceIdUrl(type, room.getId());
+		String url = microservicesUrl.getServiceIdUrl(type, room.getId());
 		String requestJson = "{\"enabled\": " + enabled + "}";
 		if (type == MicroserviceType.DOOR) {
 			requestJson = "{\"locked\": " + enabled + "}";
@@ -52,7 +56,7 @@ public class ServicesController {
 
 	private void fetchMicroservice(MicroserviceType type) {
 		RestTemplate restTemplate = new RestTemplate();
-		String url = MicroservicesUrl.getServiceUrl(type);
+		String url = microservicesUrl.getBaseServiceUrl(type);
 		try {
 			String results = restTemplate.getForObject(url, String.class);
 			System.out.println(results);

@@ -1,25 +1,33 @@
 package fr.iss.soa.centralmicroservice;
 
+import com.netflix.discovery.EurekaClient;
 import fr.iss.soa.centralmicroservice.constants.MicroserviceType;
 import fr.iss.soa.centralmicroservice.errors.RoomNotFoundException;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Optional;
 
 @org.springframework.web.bind.annotation.RestController
 public class RestController {
 
+	@Autowired
+	private EurekaClient eurekaClient;
+
 	ServicesController servicesController;
 
-	RestController() {
-		servicesController = new ServicesController();
+	@PostConstruct
+	public void init() {
+		servicesController = new ServicesController(eurekaClient);
 	}
+
 
 	@GetMapping("/rooms")
 	public ArrayList<Room> rooms() {

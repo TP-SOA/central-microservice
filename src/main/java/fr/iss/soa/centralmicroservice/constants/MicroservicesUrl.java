@@ -1,68 +1,84 @@
 package fr.iss.soa.centralmicroservice.constants;
 
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.EurekaClient;
+
 public class MicroservicesUrl {
-	private final static String LIGHT_BASE_URL = "http://127.0.0.1:8081";
-	private final static String ALARM_BASE_URL = "http://127.0.0.1:8082";
-	private final static String DOOR_BASE_URL = "http://127.0.0.1:8083";
-	private final static String PRESENCE_BASE_URL = "http://127.0.0.1:8084";
+	private final static String LIGHT_SERVICE = "light-microservice";
+	private final static String ALARM_SERVICE = "alarm-microservice";
+	private final static String DOOR_SERVICE = "door-microservice";
+	private final static String PRESENCE_SERVICE = "presence-microservice";
 
-	public static String getLightsUrl() {
-		return LIGHT_BASE_URL + "/lights";
+	private final EurekaClient eurekaClient;
+
+	public MicroservicesUrl(EurekaClient eurekaClient) {
+		this.eurekaClient = eurekaClient;
 	}
 
-	public static String getAlarmsUrl() {
-		return ALARM_BASE_URL + "/alarms";
+	private String getBaseServiceUrl(String serviceName) {
+		InstanceInfo service = eurekaClient
+				.getApplication(serviceName)
+				.getInstances()
+				.get(0);
+
+		String hostName = service.getHostName();
+		int port = service.getPort();
+		return "http://" + hostName + ":" + port;
 	}
 
-	public static String getDoorsUrl() {
-		return DOOR_BASE_URL + "/doors";
+	public String getLightsUrl() {
+		return getBaseServiceUrl(LIGHT_SERVICE) + "/lights";
 	}
 
-	public static String getServiceUrl(MicroserviceType type) {
+	public String getAlarmsUrl() {
+		return getBaseServiceUrl(ALARM_SERVICE) + "/alarms";
+	}
+
+	public String getDoorsUrl() {
+		return getBaseServiceUrl(DOOR_SERVICE) + "/doors";
+	}
+
+	public String getBaseServiceUrl(MicroserviceType type) {
 		String url = null;
 		switch (type) {
 			case LIGHT:
-				url = MicroservicesUrl.getLightsUrl();
+				url = getLightsUrl();
 				break;
 			case ALARM:
-				url = MicroservicesUrl.getAlarmsUrl();
+				url = getAlarmsUrl();
 				break;
 			case DOOR:
-				url = MicroservicesUrl.getDoorsUrl();
+				url = getDoorsUrl();
 				break;
 		}
 		return url;
 	}
 
-	public static String getLightIdUrl(long id) {
+	public String getLightIdUrl(long id) {
 		return getLightsUrl() + "/" + id;
 	}
 
-	public static String getAlarmIdUrl(long id) {
+	public String getAlarmIdUrl(long id) {
 		return getAlarmsUrl() + "/" + id;
 	}
 
-	public static String getDoorIdUrl(long id) {
+	public String getDoorIdUrl(long id) {
 		return getDoorsUrl() + "/" + id;
 	}
 
-	public static String getServiceIdUrl(MicroserviceType type, long  id) {
+	public String getServiceIdUrl(MicroserviceType type, long  id) {
 		String url = null;
 		switch (type) {
 			case LIGHT:
-				url = MicroservicesUrl.getLightIdUrl(id);
+				url = getLightIdUrl(id);
 				break;
 			case ALARM:
-				url = MicroservicesUrl.getAlarmIdUrl(id);
+				url = getAlarmIdUrl(id);
 				break;
 			case DOOR:
-				url = MicroservicesUrl.getDoorIdUrl(id);
+				url = getDoorIdUrl(id);
 				break;
 		}
 		return url;
-	}
-
-	public static String getPresenceDetectorsListUrl() {
-		return PRESENCE_BASE_URL + "/detectors";
 	}
 }
